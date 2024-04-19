@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Martin Messer <martin.messer@cyberus-technology.de>
+Date: Wed, 14 Feb 2024 09:50:01 +0000
+Subject: [PATCH] config: add VBOX_WITH_KVM_NESTING config option
+
+---
+ Config.kmk | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Config.kmk b/Config.kmk
+index 7d09ca397..b0783a5fe 100644
+--- a/Config.kmk
++++ b/Config.kmk
+@@ -2009,6 +2009,7 @@ endif
+ CYBERUS_CXX_FLAGS = -Werror -Wall
+ ifdef VBOX_WITH_KVM
+  DEFS += VBOX_WITH_KVM
++ DEFS += VBOX_WITH_KVM_NESTING
+ endif
+ ifndef VBOX_HEADLESS
+  DEFS += VBOX_WITH_GVT_RENDERING
+-- 
+2.34.1
+

@@ -55,5 +55,5 @@ index 12a0f98a5..82ebed65e 100644
  
          for (VMCPUID idCpu = 0; idCpu < pVM->cCpus; idCpu++)
 -- 
-2.44.0
+2.34.1
 

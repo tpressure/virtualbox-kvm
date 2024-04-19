@@ -30,5 +30,5 @@ index 247f0fa32..3c9d323f0 100644
                                 //| RT_BIT(22) - reserved
                                 | PASSTHRU_FEATURE(pConfig->enmCLFlushOpt, pHstFeat->fClFlushOpt, X86_CPUID_STEXT_FEATURE_EBX_CLFLUSHOPT)
 -- 
-2.44.0
+2.34.1
 

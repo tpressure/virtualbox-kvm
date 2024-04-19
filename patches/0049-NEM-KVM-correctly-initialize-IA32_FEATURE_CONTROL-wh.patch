@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Thomas Prescher <thomas.prescher@cyberus-technology.de>
+Date: Tue, 12 Mar 2024 13:54:17 +0000
+Subject: [PATCH] NEM/KVM: correctly initialize IA32_FEATURE_CONTROL when
+ nested virtualization is enabled
+
+---
+ src/VBox/VMM/VMMR3/NEMR3Native-linux.cpp | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/VBox/VMM/VMMR3/NEMR3Native-linux.cpp b/src/VBox/VMM/VMMR3/NEMR3Native-linux.cpp
+index ecb4dd525..e333f702a 100644
+--- a/src/VBox/VMM/VMMR3/NEMR3Native-linux.cpp
++++ b/src/VBox/VMM/VMMR3/NEMR3Native-linux.cpp
+@@ -37,6 +37,7 @@
+ #include <VBox/vmm/apic.h>
+ #include <VBox/vmm/pdm.h>
+ #include <VBox/vmm/trpm.h>
++#include "CPUMInternal.h"
+ #include "NEMInternal.h"
+ #include "HMInternal.h"
+ #include "GIMInternal.h"
+@@ -1036,6 +1037,10 @@ int nemR3NativeInitCompleted(PVM pVM, VMINITCOMPLETED enmWhat)
+             int rc = nemR3LnxUpdateCpuIdsLeaves(pVM, pVM->apCpusR3[idCpu]);
+             AssertRCReturn(rc, rc);
+ 
++            if (pVM->cpum.s.GuestFeatures.fVmx) {
++                NEMR3KvmSetMsr(pVM->apCpusR3[idCpu], MSR_IA32_FEATURE_CONTROL, MSR_IA32_FEATURE_CONTROL_VMXON | MSR_IA32_FEATURE_CONTROL_LOCK);
++            }
++
+             uint64_t val {0};
+             NEMR3KvmGetMsr(pVM->apCpusR3[idCpu], MSR_IA32_ARCH_CAPABILITIES, &val);
+             pCtxMsrs->msr.ArchCaps = val;
+-- 
+2.34.1
+

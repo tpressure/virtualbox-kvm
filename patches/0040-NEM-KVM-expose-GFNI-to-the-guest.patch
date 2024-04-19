@@ -34,5 +34,5 @@ index ab44cf161..bc756ceb7 100644
                  pCurLeaf->uEdx &= 0
                                 | PASSTHRU_FEATURE_KVM_ONLY(X86_CPUID_STEXT_FEATURE_EDX_FSRM)
 -- 
-2.44.0
+2.34.1
 

@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Thomas Prescher <thomas.prescher@cyberus-technology.de>
+Date: Fri, 22 Mar 2024 08:23:27 +0000
+Subject: [PATCH] GIMHvOnKvm: report KVM in cpuid leaf 0x40000100
+
+This indicates to the guest that we're running on KVM
+and HyperV PV is enabled. Some hypervisors probe this
+explicitly and won't run unless we report it this way.
+---
+ src/VBox/VMM/VMMR3/GIMHvOnKvm.cpp | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/src/VBox/VMM/VMMR3/GIMHvOnKvm.cpp b/src/VBox/VMM/VMMR3/GIMHvOnKvm.cpp
+index 521c0955f..f26a004ad 100644
+--- a/src/VBox/VMM/VMMR3/GIMHvOnKvm.cpp
++++ b/src/VBox/VMM/VMMR3/GIMHvOnKvm.cpp
+@@ -326,6 +326,27 @@ VMMR3_INT_DECL(int) gimR3HvInit(PVM pVM, PCFGMNODE pGimCfg)
+     rc = CPUMR3CpuIdInsert(pVM, &HyperLeaf);
+     AssertLogRelRCReturn(rc, rc);
+ 
++    static constexpr char kvmVendor[] = "KVMKVMKVM\0\0\0";
++    HyperLeaf.uLeaf = 0x40000100;
++    {
++        uint32_t uVendorEbx;
++        uint32_t uVendorEcx;
++        uint32_t uVendorEdx;
++        uVendorEbx = ((uint32_t)kvmVendor[ 3]) << 24 | ((uint32_t)kvmVendor[ 2]) << 16 | ((uint32_t)kvmVendor[1]) << 8
++            | (uint32_t)kvmVendor[ 0];
++        uVendorEcx = ((uint32_t)kvmVendor[ 7]) << 24 | ((uint32_t)kvmVendor[ 6]) << 16 | ((uint32_t)kvmVendor[5]) << 8
++            | (uint32_t)kvmVendor[ 4];
++        uVendorEdx = ((uint32_t)kvmVendor[11]) << 24 | ((uint32_t)kvmVendor[10]) << 16 | ((uint32_t)kvmVendor[9]) << 8
++            | (uint32_t)kvmVendor[ 8];
++        HyperLeaf.uEbx         = uVendorEbx;
++        HyperLeaf.uEcx         = uVendorEcx;
++        HyperLeaf.uEdx         = uVendorEdx;
++    }
++
++    rc = CPUMR3CpuIdInsert(pVM, &HyperLeaf);
++    AssertLogRelRCReturn(rc, rc);
++
++
+     /*
+      * Insert all MSR ranges of Hyper-V.
+      */
+-- 
+2.34.1
+

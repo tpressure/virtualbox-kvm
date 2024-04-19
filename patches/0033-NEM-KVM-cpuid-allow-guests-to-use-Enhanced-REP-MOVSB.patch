@@ -21,5 +21,5 @@ index 3c9d323f0..bf0dc09af 100644
                                 //| X86_CPUID_STEXT_FEATURE_EBX_RTM               RT_BIT(11)
                                 //| X86_CPUID_STEXT_FEATURE_EBX_PQM               RT_BIT(12)
 -- 
-2.44.0
+2.34.1
 

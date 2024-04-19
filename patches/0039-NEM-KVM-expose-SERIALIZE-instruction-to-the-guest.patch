@@ -34,5 +34,5 @@ index 42d8a00f5..ab44cf161 100644
                                 | PASSTHRU_FEATURE_KVM_ONLY(X86_CPUID_STEXT_FEATURE_EDX_IBRS_IBPB)
                                 | PASSTHRU_FEATURE_KVM_ONLY(X86_CPUID_STEXT_FEATURE_EDX_STIBP)
 -- 
-2.44.0
+2.34.1
 

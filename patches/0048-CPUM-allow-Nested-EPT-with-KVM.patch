@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Martin Messer <martin.messer@cyberus-technology.de>
+Date: Wed, 28 Feb 2024 14:31:32 +0000
+Subject: [PATCH] CPUM: allow Nested EPT with KVM
+
+---
+ src/VBox/VMM/VMMR3/CPUM.cpp | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/VBox/VMM/VMMR3/CPUM.cpp b/src/VBox/VMM/VMMR3/CPUM.cpp
+index 408102f8d..f906332e7 100644
+--- a/src/VBox/VMM/VMMR3/CPUM.cpp
++++ b/src/VBox/VMM/VMMR3/CPUM.cpp
+@@ -1790,9 +1790,13 @@ void cpumR3InitVmxGuestFeaturesAndMsrs(PVM pVM, PCFGMNODE pCpumCfg, PCVMXMSRS pH
+     if (fVmxEpt)
+     {
+         const char *pszWhy = NULL;
++#ifndef VBOX_WITH_KVM_NESTING
+         if (!VM_IS_HM_ENABLED(pVM) && !VM_IS_EXEC_ENGINE_IEM(pVM))
+             pszWhy = "execution engine is neither HM nor IEM";
+         else if (VM_IS_HM_ENABLED(pVM) && !HMIsNestedPagingActive(pVM))
++#else
++        if (VM_IS_HM_ENABLED(pVM) && !HMIsNestedPagingActive(pVM))
++#endif
+             pszWhy = "nested paging is not enabled for the VM or it is not supported by the host";
+         else if (VM_IS_HM_ENABLED(pVM) && !pVM->cpum.s.HostFeatures.fNoExecute)
+             pszWhy = "NX is not available on the host";
+-- 
+2.34.1
+

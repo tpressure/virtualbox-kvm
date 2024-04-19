@@ -35,5 +35,5 @@ index 4bf98a427..b4e84c63d 100644
                                 //| X86_CPUID_STEXT_FEATURE_EBX_AVX512PF          RT_BIT(26)
                                 //| X86_CPUID_STEXT_FEATURE_EBX_AVX512ER          RT_BIT(27)
 -- 
-2.44.0
+2.34.1
 

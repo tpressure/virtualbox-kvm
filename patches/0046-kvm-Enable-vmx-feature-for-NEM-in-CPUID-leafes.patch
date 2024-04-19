@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Martin Messer <martin.messer@cyberus-technology.de>
+Date: Wed, 14 Feb 2024 09:50:50 +0000
+Subject: [PATCH] kvm: Enable vmx feature for NEM in CPUID leafes
+
+---
+ src/VBox/VMM/VMMR3/CPUMR3CpuId.cpp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/VBox/VMM/VMMR3/CPUMR3CpuId.cpp b/src/VBox/VMM/VMMR3/CPUMR3CpuId.cpp
+index d3df15578..0a78f2fe1 100644
+--- a/src/VBox/VMM/VMMR3/CPUMR3CpuId.cpp
++++ b/src/VBox/VMM/VMMR3/CPUMR3CpuId.cpp
+@@ -2751,6 +2751,7 @@ static int cpumR3CpuIdReadConfig(PVM pVM, PCPUMCPUIDCONFIG pConfig, PCFGMNODE pC
+         AssertLogRelRCReturn(rc, rc);
+         if (pConfig->fNestedHWVirt)
+         {
++#ifndef VBOX_WITH_KVM_NESTING
+             /** @todo Think about enabling this later with NEM/KVM. */
+             if (VM_IS_NEM_ENABLED(pVM))
+             {
+@@ -2760,6 +2761,7 @@ static int cpumR3CpuIdReadConfig(PVM pVM, PCPUMCPUIDCONFIG pConfig, PCFGMNODE pC
+             else if (!fNestedPagingAndFullGuestExec)
+                 return VMSetError(pVM, VERR_CPUM_INVALID_HWVIRT_CONFIG, RT_SRC_POS,
+                                   "Cannot enable nested VT-x/AMD-V without nested-paging and unrestricted guest execution!\n");
++#endif
+         }
+     }
+ 
+-- 
+2.34.1
+

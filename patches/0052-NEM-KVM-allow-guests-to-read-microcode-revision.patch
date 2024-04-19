@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Thomas Prescher <thomas.prescher@cyberus-technology.de>
+Date: Mon, 25 Mar 2024 10:21:42 +0000
+Subject: [PATCH] NEM/KVM: allow guests to read microcode revision
+
+---
+ src/VBox/VMM/VMMR3/NEMR3Native-linux.cpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/VBox/VMM/VMMR3/NEMR3Native-linux.cpp b/src/VBox/VMM/VMMR3/NEMR3Native-linux.cpp
+index e333f702a..01e7603b2 100644
+--- a/src/VBox/VMM/VMMR3/NEMR3Native-linux.cpp
++++ b/src/VBox/VMM/VMMR3/NEMR3Native-linux.cpp
+@@ -1097,6 +1097,7 @@ int nemR3NativeInitCompleted(PVM pVM, VMINITCOMPLETED enmWhat)
+ 
+         /* 1st Intel range: 0000_0000 to 0000_3000. */
+         MSR_RANGE_BEGIN(0x00000000, 0x00003000, KVM_MSR_FILTER_READ | KVM_MSR_FILTER_WRITE);
++        MSR_RANGE_ADD(MSR_IA32_BIOS_SIGN_ID);
+         MSR_RANGE_ADD(MSR_IA32_TSC);
+         MSR_RANGE_ADD(MSR_IA32_APICBASE);
+         MSR_RANGE_ADD(MSR_IA32_SYSENTER_CS);
+-- 
+2.34.1
+

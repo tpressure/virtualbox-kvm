@@ -21,5 +21,5 @@ index b279a89d9..247f0fa32 100644
                                 //| RT_BIT_32(28)                    - reserved
                                 //| X86_CPUID_EXT_FEATURE_EDX_LONG_MODE - turned on when necessary
 -- 
-2.44.0
+2.34.1
 

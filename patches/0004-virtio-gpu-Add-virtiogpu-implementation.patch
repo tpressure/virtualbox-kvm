@@ -5283,5 +5283,5 @@ index 1da906512..116045bb2 100644
  #ifdef VBOX_WITH_KVM
          /* Extended hypercalls require KVM_EXIT_HYPER_HCALL exits to be forwarded gimHvHypercall.
 -- 
-2.44.0
+2.34.1
 

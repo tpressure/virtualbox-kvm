@@ -127,5 +127,5 @@ index 6e5332150..000000000
 -    - `VBoxManage modifyvm <vm name> --graphicscontroller vboxsvga`
 -- After host suspend/resume, the graphics may recover when pressing `Win + Ctrl + Shift + B`. Some windows may stay black, in which case minimizing/maximizing may fix the problem.
 -- 
-2.44.0
+2.34.1
 

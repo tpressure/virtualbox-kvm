@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Thomas Prescher <thomas.prescher@cyberus-technology.de>
+Date: Thu, 14 Mar 2024 12:08:23 +0000
+Subject: [PATCH] GIMHvOnKvm: always pose as microsoft
+
+This is necessary because some hypervisors explicitly probe this
+and do not accept VBoxVBoxVBox.
+---
+ src/VBox/VMM/VMMR3/GIMHvOnKvm.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/VBox/VMM/VMMR3/GIMHvOnKvm.cpp b/src/VBox/VMM/VMMR3/GIMHvOnKvm.cpp
+index 168309268..521c0955f 100644
+--- a/src/VBox/VMM/VMMR3/GIMHvOnKvm.cpp
++++ b/src/VBox/VMM/VMMR3/GIMHvOnKvm.cpp
+@@ -128,7 +128,7 @@ VMMR3_INT_DECL(int) gimR3HvInit(PVM pVM, PCFGMNODE pGimCfg)
+     /** @cfgm{/GIM/HyperV/VendorID, string, 'VBoxVBoxVBox'}
+      * The Hyper-V vendor signature, must be 12 characters. */
+     char szVendor[13];
+-    int rc = CFGMR3QueryStringDef(pCfgHv, "VendorID", szVendor, sizeof(szVendor), "VBoxVBoxVBox");
++    int rc = CFGMR3QueryStringDef(pCfgHv, "VendorID", szVendor, sizeof(szVendor), "Microsoft Hv");
+     AssertLogRelRCReturn(rc, rc);
+     AssertLogRelMsgReturn(strlen(szVendor) == 12,
+                           ("The VendorID config value must be exactly 12 chars, '%s' isn't!\n", szVendor),
+@@ -136,7 +136,7 @@ VMMR3_INT_DECL(int) gimR3HvInit(PVM pVM, PCFGMNODE pGimCfg)
+ 
+     LogRel(("GIM: HyperV: Reporting vendor as '%s'\n", szVendor));
+ 
+-    AssertReleaseMsg(!RTStrNCmp(szVendor, GIM_HV_VENDOR_VBOX, sizeof(GIM_HV_VENDOR_VBOX) - 1), (("GIM Vendors other than VBox are unsupported")));
++    AssertReleaseMsg(!RTStrNCmp(szVendor, GIM_HV_VENDOR_MICROSOFT, sizeof(GIM_HV_VENDOR_VBOX) - 1), (("GIM Vendors other than Microsoft Hv are unsupported")));
+ 
+     pHv->fIsInterfaceVs = false;
+     pHv->fDbgHypercallInterface = false;
+-- 
+2.34.1
+

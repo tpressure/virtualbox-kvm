@@ -34,5 +34,5 @@ index 359af2b1d..4bf98a427 100644
                                 //| X86_CPUID_STEXT_FEATURE_EDX_IBRS_IBPB         RT_BIT(26)
                                 //| X86_CPUID_STEXT_FEATURE_EDX_STIBP             RT_BIT(27)
 -- 
-2.44.0
+2.34.1
 

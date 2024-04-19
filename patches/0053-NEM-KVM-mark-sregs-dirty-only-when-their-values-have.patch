@@ -1,0 +1,119 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Thomas Prescher <thomas.prescher@cyberus-technology.de>
+Date: Wed, 17 Apr 2024 15:40:11 +0200
+Subject: [PATCH] NEM/KVM: mark sregs dirty only when their values have changed
+
+---
+ src/VBox/VMM/VMMR3/NEMR3Native-linux.cpp | 69 +++++++++++++++++++-----
+ 1 file changed, 56 insertions(+), 13 deletions(-)
+
+diff --git a/src/VBox/VMM/VMMR3/NEMR3Native-linux.cpp b/src/VBox/VMM/VMMR3/NEMR3Native-linux.cpp
+index 01e7603b2..e9c042801 100644
+--- a/src/VBox/VMM/VMMR3/NEMR3Native-linux.cpp
++++ b/src/VBox/VMM/VMMR3/NEMR3Native-linux.cpp
+@@ -2443,21 +2443,49 @@ static int nemHCLnxExportState(PVM pVM, PVMCPU pVCpu, PCPUMCTX pCtx, struct kvm_
+             (a_KvmSeg).unusable = (a_CtxSeg).Attr.n.u1Unusable; \
+             (a_KvmSeg).padding  = 0; \
+         } while (0)
+-
++#define NEM_LNX_SREG_IDENTICAL(a_KvmSeg, a_CtxSeg) ( \
++            (a_KvmSeg).base     == (a_CtxSeg).u64Base && \
++            (a_KvmSeg).limit    == (a_CtxSeg).u32Limit && \
++            (a_KvmSeg).selector == (a_CtxSeg).Sel && \
++            (a_KvmSeg).type     == (a_CtxSeg).Attr.n.u4Type && \
++            (a_KvmSeg).s        == (a_CtxSeg).Attr.n.u1DescType && \
++            (a_KvmSeg).dpl      == (a_CtxSeg).Attr.n.u2Dpl && \
++            (a_KvmSeg).present  == (a_CtxSeg).Attr.n.u1Present && \
++            (a_KvmSeg).avl      == (a_CtxSeg).Attr.n.u1Available && \
++            (a_KvmSeg).l        == (a_CtxSeg).Attr.n.u1Long && \
++            (a_KvmSeg).db       == (a_CtxSeg).Attr.n.u1DefBig && \
++            (a_KvmSeg).g        == (a_CtxSeg).Attr.n.u1Granularity && \
++            (a_KvmSeg).unusable == (a_CtxSeg).Attr.n.u1Unusable \
++        )
++
++        bool dirty_sregs = false;
+         if (fExtrn & CPUMCTX_EXTRN_SREG_MASK)
+         {
+-            if (fExtrn & CPUMCTX_EXTRN_ES)
++            if (fExtrn & CPUMCTX_EXTRN_ES and not NEM_LNX_SREG_IDENTICAL(pRun->s.regs.sregs.es, pCtx->es)) {
+                 NEM_LNX_EXPORT_SEG(pRun->s.regs.sregs.es, pCtx->es);
+-            if (fExtrn & CPUMCTX_EXTRN_CS)
++                dirty_sregs = true;
++            }
++            if (fExtrn & CPUMCTX_EXTRN_CS and not NEM_LNX_SREG_IDENTICAL(pRun->s.regs.sregs.cs, pCtx->cs)) {
+                 NEM_LNX_EXPORT_SEG(pRun->s.regs.sregs.cs, pCtx->cs);
+-            if (fExtrn & CPUMCTX_EXTRN_SS)
++                dirty_sregs = true;
++            }
++            if (fExtrn & CPUMCTX_EXTRN_SS and not NEM_LNX_SREG_IDENTICAL(pRun->s.regs.sregs.ss, pCtx->ss)) {
+                 NEM_LNX_EXPORT_SEG(pRun->s.regs.sregs.ss, pCtx->ss);
+-            if (fExtrn & CPUMCTX_EXTRN_DS)
++                dirty_sregs = true;
++            }
++            if (fExtrn & CPUMCTX_EXTRN_DS and not NEM_LNX_SREG_IDENTICAL(pRun->s.regs.sregs.ds, pCtx->ds)) {
+                 NEM_LNX_EXPORT_SEG(pRun->s.regs.sregs.ds, pCtx->ds);
+-            if (fExtrn & CPUMCTX_EXTRN_FS)
++                dirty_sregs = true;
++            }
++            if (fExtrn & CPUMCTX_EXTRN_FS and not NEM_LNX_SREG_IDENTICAL(pRun->s.regs.sregs.fs, pCtx->fs)) {
+                 NEM_LNX_EXPORT_SEG(pRun->s.regs.sregs.fs, pCtx->fs);
+-            if (fExtrn & CPUMCTX_EXTRN_GS)
++                dirty_sregs = true;
++            }
++            if (fExtrn & CPUMCTX_EXTRN_GS and not NEM_LNX_SREG_IDENTICAL(pRun->s.regs.sregs.gs, pCtx->gs)) {
+                 NEM_LNX_EXPORT_SEG(pRun->s.regs.sregs.gs, pCtx->gs);
++                dirty_sregs = true;
++            }
++
+         }
+         if (fExtrn & CPUMCTX_EXTRN_TABLE_MASK)
+         {
+@@ -2481,24 +2509,39 @@ static int nemHCLnxExportState(PVM pVM, PVMCPU pVCpu, PCPUMCTX pCtx, struct kvm_
+                 NEM_LNX_EXPORT_SEG(pRun->s.regs.sregs.ldt, pCtx->ldtr);
+             if (fExtrn & CPUMCTX_EXTRN_TR)
+                 NEM_LNX_EXPORT_SEG(pRun->s.regs.sregs.tr, pCtx->tr);
++
++            dirty_sregs = true;
+         }
+         if (fExtrn & CPUMCTX_EXTRN_CR_MASK)
+         {
+-            if (fExtrn & CPUMCTX_EXTRN_CR0)
++            if (fExtrn & CPUMCTX_EXTRN_CR0 and pRun->s.regs.sregs.cr0 != pCtx->cr0) {
+                 pRun->s.regs.sregs.cr0   = pCtx->cr0;
+-            if (fExtrn & CPUMCTX_EXTRN_CR2)
++                dirty_sregs = true;
++            }
++            if (fExtrn & CPUMCTX_EXTRN_CR2) {
+                 pRun->s.regs.sregs.cr2   = pCtx->cr2;
+-            if (fExtrn & CPUMCTX_EXTRN_CR3)
++                dirty_sregs = true;
++            }
++            if (fExtrn & CPUMCTX_EXTRN_CR3 and pRun->s.regs.sregs.cr3 != pCtx->cr3) {
+                 pRun->s.regs.sregs.cr3   = pCtx->cr3;
+-            if (fExtrn & CPUMCTX_EXTRN_CR4)
++                dirty_sregs = true;
++            }
++            if ((fExtrn & CPUMCTX_EXTRN_CR4) and pRun->s.regs.sregs.cr4 != pCtx->cr4) {
+                 pRun->s.regs.sregs.cr4   = pCtx->cr4;
++                dirty_sregs = true;
++            }
+         }
+-        if (fExtrn & CPUMCTX_EXTRN_EFER)
++        if (fExtrn & CPUMCTX_EXTRN_EFER and pRun->s.regs.sregs.efer != pCtx->msrEFER) {
+             pRun->s.regs.sregs.efer   = pCtx->msrEFER;
++            dirty_sregs = true;
++        }
+ 
+         RT_ZERO(pRun->s.regs.sregs.interrupt_bitmap); /* this is an alternative interrupt injection interface */
+ 
+-        pRun->kvm_dirty_regs |= KVM_SYNC_X86_SREGS;
++        if (dirty_sregs) {
++            pRun->kvm_dirty_regs |= KVM_SYNC_X86_SREGS;
++        }
++
+     }
+ 
+     /*
+-- 
+2.34.1
+
